@@ -744,9 +744,9 @@ function DashboardPage({ imported }){
                 return lista.map((r,i)=>{
                   const s  = r.status??r.situacao;
                   const ir = r.indice_risco??"Normal";
-                  const riscoColor = ir==="Promoção Urgente"?red:ir==="Promoção"?orange:ir==="Atenção"?"#7C3AED":ir==="Comprar"?blue:green;
-                  const riscoBg    = ir==="Promoção Urgente"?"#FEE2E2":ir==="Promoção"?"#FEF3C7":ir==="Atenção"?"#EDE9FE":ir==="Comprar"?"#EFF6FF":"#DCFCE7";
-                  const riscoIcon  = ir==="Promoção Urgente"?"🚨":ir==="Promoção"?"📢":ir==="Atenção"?"⚠️":ir==="Comprar"?"🛒":"✅";
+                  const riscoColor = ir==="Promoção Urgente"?red:ir==="Promoção"?orange:ir==="Atenção"?"#7C3AED":ir==="Comprar"?blue:ir==="Ruptura"?red:green;
+                  const riscoBg    = ir==="Promoção Urgente"?"#FEE2E2":ir==="Promoção"?"#FEF3C7":ir==="Atenção"?"#EDE9FE":ir==="Comprar"?"#EFF6FF":ir==="Ruptura"?"#FEE2E2":"#DCFCE7";
+                  const riscoIcon  = ir==="Promoção Urgente"?"🚨":ir==="Promoção"?"📢":ir==="Atenção"?"⚠️":ir==="Comprar"?"🛒":ir==="Ruptura"?"✕":"✅";
                   return(
                     <tr key={i} style={{borderBottom:`1px solid ${border}22`}}
                       onMouseEnter={e=>e.currentTarget.style.background=offW}

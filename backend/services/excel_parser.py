@@ -58,7 +58,7 @@ def processar_planilha(arquivo):
             f"Abas encontradas: {', '.join(xl.sheet_names)}."
         )
 
-    df_vendas = xl.parse("Vendas")
+    df_vendas = xl.parse("Vendas", header=1)
 
     if df_vendas.empty:
         raise ValueError("A aba 'Vendas' está vazia.")
@@ -108,9 +108,28 @@ def processar_planilha(arquivo):
             df_estoque["Quantidade (kg)"] = pd.to_numeric(
                 df_estoque["Quantidade (kg)"], errors="coerce").fillna(0)
 
-            # Cobertura já calculada pelo Excel
-            df_estoque["Cobertura (dias)"] = pd.to_numeric(
-                df_estoque["Cobertura (dias)"], errors="coerce").fillna(0)
+            # Calcular cobertura usando os dados de vendas da planilha
+            # Média diária = total vendido / número de dias com venda
+            if not df_vendas.empty:
+                vendas_por_produto = df_vendas.groupby("Produto").agg(
+                    total_kg=("Quantidade (kg)", "sum"),
+                    dias_com_venda=("Data", "nunique")
+                ).reset_index()
+                vendas_por_produto["media_diaria"] = (
+                    vendas_por_produto["total_kg"] / vendas_por_produto["dias_com_venda"]
+                )
+                media_dict = dict(zip(vendas_por_produto["Produto"], vendas_por_produto["media_diaria"]))
+                
+                def calc_cobertura(row):
+                    media = media_dict.get(row["Produto"], 0)
+                    if media == 0:
+                        return 0
+                    return round(row["Quantidade (kg)"] / media, 1)
+                
+                df_estoque["Cobertura (dias)"] = df_estoque.apply(calc_cobertura, axis=1)
+            else:
+                df_estoque["Cobertura (dias)"] = pd.to_numeric(
+                    df_estoque["Cobertura (dias)"], errors="coerce").fillna(0)
 
             # Calcular situação automaticamente
             df_estoque["Situacao"] = df_estoque["Cobertura (dias)"].apply(calcular_situacao)
