@@ -58,7 +58,7 @@ def get_dashboard(
     mais = db.execute(text(
         f"""SELECT produto, SUM(quantidade_kg) AS kg
            FROM historico_vendas {filtros}
-           GROUP BY produto ORDER BY kg DESC LIMIT 5"""
+           GROUP BY produto ORDER BY kg DESC """
     ), params).fetchall()
 
     # Menos vendidos — abaixo da média
@@ -73,7 +73,7 @@ def get_dashboard(
                    GROUP BY produto
                ) t
            )
-           ORDER BY kg ASC LIMIT 5"""
+           ORDER BY kg ASC """
     ), params).fetchall()
 
     # Vendas por período
@@ -81,7 +81,7 @@ def get_dashboard(
         f"""SELECT data_venda, SUM(quantidade_kg) AS kg
            FROM historico_vendas {filtros}
            GROUP BY data_venda
-           ORDER BY data_venda DESC LIMIT 7"""
+           ORDER BY data_venda DESC """
     ), params).fetchall()
 
     # Datas reais dos dados
