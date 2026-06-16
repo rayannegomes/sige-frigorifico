@@ -812,8 +812,9 @@ function ImportacaoPage({ onImport }){
         const ultima = res.data.find(r=>r.status==="sucesso");
         console.log("ultima:", ultima);
         if(ultima){
-          setUltimaImport(new Date(ultima.data).toLocaleString("pt-BR"));
-          console.log("ultimaImport:", new Date(ultima.data).toLocaleString("pt-BR"));
+        const dataUTC = new Date(ultima.data);
+        const dataBR = new Date(dataUTC.getTime() - 3 * 60 * 60 * 1000);
+        setUltimaImport(dataBR.toLocaleString("pt-BR"));
         }
       }
     }).catch(e=>console.log("erro:",e));
