@@ -59,3 +59,6 @@ export const alterarSenha = (id, dados) =>
 
 export const getUltimaImportacao = () =>
   api.get("/historico?limit=1");
+
+export const deletarImportacao = (id) =>
+  api.delete(`/importacao/${id}`);

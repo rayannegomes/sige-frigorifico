@@ -116,3 +116,26 @@ def historico(db: Session = Depends(get_db)):
          "total_vendas": r[5], "total_estoque": r[6], "detalhes": r[7]}
         for r in registros
     ]
+
+@router.delete("/importacao/{id}")
+def deletar_importacao(id: int, db: Session = Depends(get_db)):
+    # Buscar importação
+    imp = db.execute(text(
+        "SELECT id FROM importacoes WHERE id = :id"
+    ), {"id": id}).fetchone()
+    
+    if not imp:
+        raise HTTPException(404, "Importação não encontrada")
+    
+    # Apagar vendas relacionadas
+    db.execute(text(
+        "DELETE FROM historico_vendas WHERE importacao_id = :id"
+    ), {"id": id})
+    
+    # Apagar importação
+    db.execute(text(
+        "DELETE FROM importacoes WHERE id = :id"
+    ), {"id": id})
+    
+    db.commit()
+    return {"status": "sucesso"}

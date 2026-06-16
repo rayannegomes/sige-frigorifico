@@ -10,7 +10,8 @@ import { login,
         criarUsuario, 
         atualizarUsuario, 
         excluirUsuario, 
-        alterarSenha } from "./api";
+        alterarSenha,
+        deletarImportacao } from "./api";
 import * as XLSX from "xlsx";
 
 
@@ -1136,12 +1137,23 @@ const handle = async ()=>{
   );
 }
 /* tela de histórico */
-function HistoricoPage(){
+function HistoricoPage({ perfil }){
   const [lista, setLista] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(()=>{
     getHistorico().then(res => setLista(res.data)).catch(()=>{});
   },[]);
+
+  const handleDelete = async (id) => {
+    try {
+      await deletarImportacao(id);
+      setLista(h => h.filter(r => r.id !== id));
+      setConfirmDelete(null);
+    } catch(e) {
+      alert("Erro ao excluir importação");
+    }
+  };
 
   return(
     <div style={{flex:1, overflowY:"auto", background:offW}}>
@@ -1154,7 +1166,7 @@ function HistoricoPage(){
           <table style={{width:"100%", borderCollapse:"collapse", fontSize:12}}>
             <thead>
               <tr style={{background:offW}}>
-                {["#","Arquivo","Status","Registros","Data","Detalhes"].map(h=>(
+                {["#","Arquivo","Status","Registros","Data","Detalhes",""].map(h=>(
                   <th key={h} style={{padding:"10px 16px", textAlign:"left", color:muted,
                     fontWeight:600, fontSize:11, textTransform:"uppercase",
                     borderBottom:`1px solid ${border}`}}>{h}</th>
@@ -1164,7 +1176,7 @@ function HistoricoPage(){
             <tbody>
               {lista.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{padding:"40px", textAlign:"center", color:muted}}>
+                  <td colSpan={7} style={{padding:"40px", textAlign:"center", color:muted}}>
                     Nenhuma importação realizada ainda.
                   </td>
                 </tr>
@@ -1192,6 +1204,25 @@ function HistoricoPage(){
                   </td>
                   <td style={{padding:"12px 16px", color: r.status==="sucesso" ? txt : red, fontSize:11}}>
                     {r.detalhes ?? r.erro ?? "—"}
+                  </td>
+                  <td style={{padding:"12px 16px"}}>
+                    {perfil==="gerente" && r.status==="sucesso" && (
+                      confirmDelete===r.id
+                        ? <div style={{display:"flex",gap:6}}>
+                            <button onClick={()=>handleDelete(r.id)} style={{
+                              padding:"4px 10px",borderRadius:6,border:"none",
+                              background:red,color:white,fontSize:11,cursor:"pointer",fontWeight:600
+                            }}>Confirmar</button>
+                            <button onClick={()=>setConfirmDelete(null)} style={{
+                              padding:"4px 10px",borderRadius:6,border:`1px solid ${border}`,
+                              background:white,color:muted,fontSize:11,cursor:"pointer"
+                            }}>Cancelar</button>
+                          </div>
+                        : <button onClick={()=>setConfirmDelete(r.id)} style={{
+                            padding:"4px 10px",borderRadius:6,border:`1px solid #FECACA`,
+                            background:"#FEF2F2",color:red,fontSize:11,cursor:"pointer",fontWeight:600
+                          }}>Excluir</button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -1631,7 +1662,7 @@ console.log("page:", page, "perfil:", perfil);
       <Sidebar page={page} setPage={setPage} perfil={perfil}/>
       {page==="dashboard"  && <DashboardPage imported={imported}/>}
       {page==="importacao" && <ImportacaoPage onImport={handleImport}/>}
-      {page==="historico" && <HistoricoPage/>}
+      {page==="historico" && <HistoricoPage perfil={perfil}/>}
       {page==="relatorios" && <RelatoriosPage/>}
       {page==="config" && <ConfiguracoesPage/>}
       {page==="sair"&&(()=>{
